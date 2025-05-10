@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Http\Controllers;
@@ -6,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AIModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class AIModelController extends Controller
 {
@@ -39,18 +39,23 @@ class AIModelController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $model = AIModel::create([
-            'name' => $request->name,
-            'provider' => $request->provider,
-            'type' => $request->type,
-            'description' => $request->description,
-            'api_key' => encrypt($request->api_key),
-            'status' => 'Connected',
-            'is_active' => true,
-            'configuration' => $request->configuration ?? [],
-        ]);
-
-        return response()->json($model, 201);
+        try {
+            $model = new AIModel();
+            $model->name = $request->name;
+            $model->provider = $request->provider;
+            $model->type = $request->type;
+            $model->description = $request->description;
+            $model->api_key = $request->api_key; // Will be automatically encrypted
+            $model->status = 'Connected';
+            $model->is_active = true;
+            $model->configuration = $request->configuration ?? [];
+            $model->save();
+            
+            return response()->json($model, 201);
+        } catch (\Exception $e) {
+            Log::error('Error storing AI model: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to store AI model'], 500);
+        }
     }
 
     /**
@@ -139,14 +144,33 @@ class AIModelController extends Controller
     {
         $model = AIModel::findOrFail($id);
         
-        // Implement the logic to test the connection
-        // This would depend on the provider and type of model
-        
-        // Mock response for now
-        return response()->json([
-            'success' => true,
-            'message' => 'Connection successful',
-        ]);
+        // Implements a basic test of the API key validity
+        // This could be expanded based on the model provider
+        try {
+            $apiKey = $model->getDecryptedApiKeyAttribute();
+            
+            // For demonstration purposes only - would need to be replaced 
+            // with actual API validation logic based on the provider
+            $isValid = !empty($apiKey);
+            
+            if (!$isValid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or missing API key',
+                ], 400);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('API connection test failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Connection failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
