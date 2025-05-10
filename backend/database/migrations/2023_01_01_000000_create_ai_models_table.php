@@ -26,6 +26,8 @@ class CreateAiModelsTable extends Migration
             $table->integer('usage_count')->default(0);
             $table->timestamp('last_used')->nullable();
             $table->json('configuration')->nullable();
+            $table->json('default_parameters')->nullable();
+            $table->json('widget_settings')->nullable();
             $table->timestamps();
         });
     }

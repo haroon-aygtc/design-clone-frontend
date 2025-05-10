@@ -5,6 +5,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use App\Services\AIModelService;
+use App\Repositories\AIModelRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +17,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(AIModelRepository::class, function ($app) {
+            return new AIModelRepository();
+        });
+        
+        $this->app->bind(AIModelService::class, function ($app) {
+            return new AIModelService(
+                $app->make(AIModelRepository::class)
+            );
+        });
     }
 
     /**
@@ -29,4 +39,3 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
     }
 }
-

@@ -32,4 +32,12 @@ Route::prefix('ai-models')->group(function () {
     Route::put('/{id}/toggle-active', [AIModelController::class, 'toggleActive']);
     Route::get('/{id}/test-connection', [AIModelController::class, 'testConnection']);
     Route::get('/{id}/logs', [AIModelController::class, 'getLogs']);
+    
+    // New widget-related routes
+    Route::get('/widget/available', [AIModelController::class, 'getWidgetModels']);
+    Route::post('/widget/assign', [AIModelController::class, 'assignModelToWidget']);
+    Route::post('/{id}/usage', [AIModelController::class, 'recordModelUsage']);
 });
+
+// Widget routes would go here in a full implementation
+

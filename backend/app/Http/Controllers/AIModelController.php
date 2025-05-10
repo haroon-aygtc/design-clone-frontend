@@ -1,14 +1,23 @@
+
 <?php
 
 namespace App\Http\Controllers;
 
 use App\Models\AIModel;
+use App\Services\AIModelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
 class AIModelController extends Controller
 {
+    protected $aiModelService;
+
+    public function __construct(AIModelService $aiModelService)
+    {
+        $this->aiModelService = $aiModelService;
+    }
+
     /**
      * Display a listing of all AI models.
      *
@@ -16,8 +25,13 @@ class AIModelController extends Controller
      */
     public function index()
     {
-        $models = AIModel::all();
-        return response()->json($models);
+        try {
+            $models = $this->aiModelService->getAllModels();
+            return response()->json($models);
+        } catch (\Exception $e) {
+            Log::error('Error fetching AI models: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve AI models'], 500);
+        }
     }
 
     /**
@@ -40,16 +54,16 @@ class AIModelController extends Controller
         }
 
         try {
-            $model = new AIModel();
-            $model->name = $request->name;
-            $model->provider = $request->provider;
-            $model->type = $request->type;
-            $model->description = $request->description;
-            $model->api_key = $request->api_key; // Will be automatically encrypted
-            $model->status = 'Connected';
-            $model->is_active = true;
-            $model->configuration = $request->configuration ?? [];
-            $model->save();
+            $model = $this->aiModelService->createModel([
+                'name' => $request->name,
+                'provider' => $request->provider,
+                'type' => $request->type,
+                'description' => $request->description,
+                'api_key' => $request->api_key,
+                'status' => 'Connected',
+                'is_active' => true,
+                'configuration' => $request->configuration ?? [],
+            ]);
             
             return response()->json($model, 201);
         } catch (\Exception $e) {
@@ -66,8 +80,13 @@ class AIModelController extends Controller
      */
     public function show($id)
     {
-        $model = AIModel::findOrFail($id);
-        return response()->json($model);
+        try {
+            $model = $this->aiModelService->getModelById($id);
+            return response()->json($model);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving AI model: ' . $e->getMessage());
+            return response()->json(['error' => 'AI model not found'], 404);
+        }
     }
 
     /**
@@ -79,12 +98,13 @@ class AIModelController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $model = AIModel::findOrFail($id);
-        
-        // Update the model
-        $model->update($request->all());
-        
-        return response()->json($model);
+        try {
+            $model = $this->aiModelService->updateModel($id, $request->all());
+            return response()->json($model);
+        } catch (\Exception $e) {
+            Log::error('Error updating AI model: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update AI model'], 500);
+        }
     }
 
     /**
@@ -96,12 +116,13 @@ class AIModelController extends Controller
      */
     public function updateConfiguration(Request $request, $id)
     {
-        $model = AIModel::findOrFail($id);
-        
-        $model->configuration = $request->configuration;
-        $model->save();
-        
-        return response()->json($model);
+        try {
+            $model = $this->aiModelService->updateConfiguration($id, $request->configuration);
+            return response()->json($model);
+        } catch (\Exception $e) {
+            Log::error('Error updating AI model configuration: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update model configuration'], 500);
+        }
     }
 
     /**
@@ -112,12 +133,13 @@ class AIModelController extends Controller
      */
     public function toggleActive($id)
     {
-        $model = AIModel::findOrFail($id);
-        
-        $model->is_active = !$model->is_active;
-        $model->save();
-        
-        return response()->json($model);
+        try {
+            $model = $this->aiModelService->toggleActive($id);
+            return response()->json($model);
+        } catch (\Exception $e) {
+            Log::error('Error toggling AI model status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to toggle model status'], 500);
+        }
     }
 
     /**
@@ -128,10 +150,13 @@ class AIModelController extends Controller
      */
     public function destroy($id)
     {
-        $model = AIModel::findOrFail($id);
-        $model->delete();
-        
-        return response()->json(null, 204);
+        try {
+            $this->aiModelService->deleteModel($id);
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            Log::error('Error deleting AI model: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete AI model'], 500);
+        }
     }
 
     /**
@@ -142,28 +167,14 @@ class AIModelController extends Controller
      */
     public function testConnection($id)
     {
-        $model = AIModel::findOrFail($id);
-        
-        // Implements a basic test of the API key validity
-        // This could be expanded based on the model provider
         try {
-            $apiKey = $model->getDecryptedApiKeyAttribute();
+            $result = $this->aiModelService->testConnection($id);
             
-            // For demonstration purposes only - would need to be replaced 
-            // with actual API validation logic based on the provider
-            $isValid = !empty($apiKey);
-            
-            if (!$isValid) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or missing API key',
-                ], 400);
+            if (!$result['success']) {
+                return response()->json($result, 400);
             }
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Connection successful',
-            ]);
+            return response()->json($result);
         } catch (\Exception $e) {
             Log::error('API connection test failed: ' . $e->getMessage());
             return response()->json([
@@ -181,33 +192,79 @@ class AIModelController extends Controller
      */
     public function getLogs($id)
     {
-        $model = AIModel::findOrFail($id);
-        
-        // Mock logs data
-        $logs = [
-            [
-                'id' => 1,
-                'timestamp' => now()->subHours(1)->format('Y-m-d H:i:s'),
-                'type' => 'Usage',
-                'message' => 'API call successful',
-                'details' => 'Generated 256 tokens in 2.3 seconds'
-            ],
-            [
-                'id' => 2,
-                'timestamp' => now()->subHours(2)->format('Y-m-d H:i:s'),
-                'type' => 'Usage',
-                'message' => 'API call successful',
-                'details' => 'Generated 512 tokens in 4.1 seconds'
-            ],
-            [
-                'id' => 3,
-                'timestamp' => now()->subHours(3)->format('Y-m-d H:i:s'),
-                'type' => 'Error',
-                'message' => 'Rate limit exceeded',
-                'details' => 'Too many requests in 1 minute'
-            ],
-        ];
-        
-        return response()->json($logs);
+        try {
+            $logs = $this->aiModelService->getModelLogs($id);
+            return response()->json($logs);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving AI model logs: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve model logs'], 500);
+        }
+    }
+    
+    /**
+     * Get all active models for widget use.
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function getWidgetModels()
+    {
+        try {
+            $models = $this->aiModelService->getWidgetModels();
+            return response()->json($models);
+        } catch (\Exception $e) {
+            Log::error('Error fetching widget AI models: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve widget models'], 500);
+        }
+    }
+    
+    /**
+     * Assign an AI model to a widget.
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function assignModelToWidget(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'model_id' => 'required|integer|exists:ai_models,id',
+            'widget_id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        try {
+            $result = $this->aiModelService->assignModelToWidget(
+                $request->model_id,
+                $request->widget_id
+            );
+            
+            if ($result) {
+                return response()->json(['success' => true, 'message' => 'Model assigned to widget successfully']);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Failed to assign model to widget'], 400);
+        } catch (\Exception $e) {
+            Log::error('Error assigning AI model to widget: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to assign model to widget'], 500);
+        }
+    }
+    
+    /**
+     * Increment model usage counter.
+     * 
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function recordModelUsage($id)
+    {
+        try {
+            $model = $this->aiModelService->incrementUsageCount($id);
+            return response()->json(['success' => true, 'usage_count' => $model->usage_count]);
+        } catch (\Exception $e) {
+            Log::error('Error recording AI model usage: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to record model usage'], 500);
+        }
     }
 }
