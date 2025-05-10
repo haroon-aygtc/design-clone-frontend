@@ -107,6 +107,42 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* Code syntax highlighting */
+pre {
+  position: relative;
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  line-height: 1.5;
+}
+
+pre code {
+  color: #e4e4e7;
+  font-size: 0.875rem;
+}
+
+pre code .keyword {
+  color: #c792ea;
+}
+
+pre code .string {
+  color: #a5e844;
+}
+
+pre code .comment {
+  color: #676e95;
+  font-style: italic;
+}
+
+pre code .number {
+  color: #ff9d00;
+}
+
+pre code .operator {
+  color: #89ddff;
+}
+
 .admin-sidebar {
   background-color: theme('colors.admin.navy');
   color: theme('colors.admin.text');
