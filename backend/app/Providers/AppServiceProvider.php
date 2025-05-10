@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use App\Services\AIModelService;
 use App\Repositories\AIModelRepository;
+use App\Services\WidgetSettingService;
+use App\Repositories\WidgetSettingRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AIModelService::class, function ($app) {
             return new AIModelService(
                 $app->make(AIModelRepository::class)
+            );
+        });
+        
+        $this->app->bind(WidgetSettingRepository::class, function ($app) {
+            return new WidgetSettingRepository();
+        });
+        
+        $this->app->bind(WidgetSettingService::class, function ($app) {
+            return new WidgetSettingService(
+                $app->make(WidgetSettingRepository::class)
             );
         });
     }

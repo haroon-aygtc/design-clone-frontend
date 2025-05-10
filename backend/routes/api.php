@@ -2,6 +2,7 @@
 <?php
 
 use App\Http\Controllers\AIModelController;
+use App\Http\Controllers\WidgetSettingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,11 +34,21 @@ Route::prefix('ai-models')->group(function () {
     Route::get('/{id}/test-connection', [AIModelController::class, 'testConnection']);
     Route::get('/{id}/logs', [AIModelController::class, 'getLogs']);
     
-    // New widget-related routes
+    // Widget-related routes
     Route::get('/widget/available', [AIModelController::class, 'getWidgetModels']);
     Route::post('/widget/assign', [AIModelController::class, 'assignModelToWidget']);
     Route::post('/{id}/usage', [AIModelController::class, 'recordModelUsage']);
 });
 
-// Widget routes would go here in a full implementation
+// Widget Settings routes
+Route::prefix('widget-settings')->group(function () {
+    Route::get('/', [WidgetSettingController::class, 'index']);
+    Route::post('/', [WidgetSettingController::class, 'store']);
+    Route::get('/{id}', [WidgetSettingController::class, 'show']);
+    Route::put('/{id}', [WidgetSettingController::class, 'update']);
+    Route::delete('/{id}', [WidgetSettingController::class, 'destroy']);
+    
+    Route::get('/model/{aiModelId}', [WidgetSettingController::class, 'getByModelId']);
+    Route::get('/{id}/embed-code', [WidgetSettingController::class, 'generateEmbedCode']);
+});
 

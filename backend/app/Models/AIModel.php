@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Models;
@@ -84,6 +83,16 @@ class AIModel extends Model
         } catch (\Exception $e) {
             return null;
         }
+    }
+    
+    /**
+     * Get the widget settings for this model.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function widgetSettings()
+    {
+        return $this->hasMany(WidgetSetting::class);
     }
     
     /**
