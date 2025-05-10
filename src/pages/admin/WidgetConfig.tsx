@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import AdminLayout from "@/layouts/AdminLayout";
 import { WidgetTabs } from "@/components/widget-config/WidgetTabs";
@@ -37,13 +38,28 @@ const WidgetConfigPage = () => {
     chatIconSize: ${chatIconSize[0]},
     position: "${position}",
     autoOpen: ${autoOpen},
-    initialMessage: "${initialMessage}"
+    initialMessage: "${initialMessage}",
+    placeholderText: "${placeholderText}",
+    allowAttachments: ${allowAttachments},
+    responseDelay: ${responseDelay[0]}
   };
 </script>
 <script src="https://cdn.example.com/chat-widget.js" async></script>`;
     
     setEmbedCode(code);
-  }, [primaryColor, secondaryColor, fontFamily, borderRadius, chatIconSize, position, autoOpen, initialMessage]);
+  }, [
+    primaryColor, 
+    secondaryColor, 
+    fontFamily, 
+    borderRadius, 
+    chatIconSize, 
+    position, 
+    autoOpen, 
+    initialMessage,
+    placeholderText,
+    allowAttachments,
+    responseDelay
+  ]);
 
   return (
     <AdminLayout title="Widget Config">
