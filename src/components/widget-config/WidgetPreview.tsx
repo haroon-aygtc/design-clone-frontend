@@ -12,6 +12,7 @@ interface WidgetPreviewProps {
   fontFamily: string;
   initialMessage: string;
   placeholderText: string;
+  position?: string;
 }
 
 type DeviceType = "desktop" | "mobile" | "tablet";
@@ -24,6 +25,7 @@ export function WidgetPreview({
   fontFamily,
   initialMessage,
   placeholderText,
+  position = "bottom-right",
 }: WidgetPreviewProps) {
   const isMobile = useIsMobile();
   const [selectedDevice, setSelectedDevice] = useState<DeviceType>("desktop");
@@ -49,7 +51,32 @@ export function WidgetPreview({
           borderRadius: "12px",
         };
       default:
-        return {};
+        return {
+          height: "500px",
+        };
+    }
+  };
+
+  // Calculate widget position based on position setting
+  const getWidgetPosition = () => {
+    const positions: Record<string, string> = {
+      "bottom-right": "bottom-4 right-4",
+      "bottom-left": "bottom-4 left-4",
+      "top-right": "top-4 right-4",
+      "top-left": "top-4 left-4",
+    };
+    
+    return positions[position] || "bottom-4 right-4";
+  };
+
+  // Calculate chat container position based on widget position
+  const getChatContainerPosition = () => {
+    const widgetPos = position || "bottom-right";
+    
+    if (widgetPos.includes("top")) {
+      return widgetPos.includes("right") ? "top-20 right-4" : "top-20 left-4";
+    } else {
+      return widgetPos.includes("right") ? "bottom-20 right-4" : "bottom-20 left-4";
     }
   };
 
@@ -89,7 +116,7 @@ export function WidgetPreview({
       </div>
       
       <div 
-        className="border-2 border-dashed border-gray-200 rounded-lg min-h-[500px] bg-gray-50 relative"
+        className="border-2 border-dashed border-gray-200 rounded-lg min-h-[500px] bg-gray-50 relative overflow-hidden"
         style={getPreviewContainerStyles()}
       >
         {previewLoading ? (
@@ -98,10 +125,24 @@ export function WidgetPreview({
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            {/* Widget Preview */}
-            <div className="flex-1 p-4 relative overflow-hidden">
+            {/* Simulated website content for more realistic preview */}
+            <div className="w-full bg-white border-b p-3">
+              <div className="h-6 w-32 bg-gray-200 rounded"></div>
+            </div>
+            
+            <div className="flex-1 p-4 relative">
+              {/* Simulated content blocks */}
+              <div className="max-w-md mx-auto space-y-4 pt-8">
+                <div className="h-8 bg-gray-100 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-100 rounded w-full"></div>
+                <div className="h-4 bg-gray-100 rounded w-5/6"></div>
+                <div className="h-4 bg-gray-100 rounded w-full"></div>
+                <div className="h-20 bg-gray-100 rounded w-full"></div>
+              </div>
+
+              {/* Widget Preview */}
               <div 
-                className="absolute bottom-4 right-4 rounded-full shadow-lg cursor-pointer"
+                className={`absolute ${getWidgetPosition()} rounded-full shadow-lg cursor-pointer z-10`}
                 style={{
                   backgroundColor: primaryColor,
                   width: `${chatIconSize}px`,
@@ -117,7 +158,7 @@ export function WidgetPreview({
               {/* Expanded Chat Widget */}
               {showExpanded && (
                 <div 
-                  className="w-72 absolute bottom-20 right-4 rounded-lg shadow-lg overflow-hidden flex flex-col bg-white"
+                  className={`w-72 absolute ${getChatContainerPosition()} rounded-lg shadow-lg overflow-hidden flex flex-col bg-white z-20`}
                   style={{
                     borderRadius: `${borderRadius[0]}px`,
                     height: '300px',
@@ -171,6 +212,7 @@ export function WidgetPreview({
                   variant="outline" 
                   size="sm"
                   onClick={() => setShowExpanded(false)}
+                  className={!showExpanded ? "bg-gray-100" : ""}
                 >
                   Minimized View
                 </Button>
@@ -178,6 +220,7 @@ export function WidgetPreview({
                   variant="outline" 
                   size="sm"
                   onClick={() => setShowExpanded(true)}
+                  className={showExpanded ? "bg-gray-100" : ""}
                 >
                   Expanded View
                 </Button>

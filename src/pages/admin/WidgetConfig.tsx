@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import AdminLayout from "@/layouts/AdminLayout";
 import { WidgetTabs } from "@/components/widget-config/WidgetTabs";
@@ -91,6 +90,7 @@ const WidgetConfigPage = () => {
             fontFamily={fontFamily}
             initialMessage={initialMessage}
             placeholderText={placeholderText}
+            position={position}
           />
         </div>
       </div>
