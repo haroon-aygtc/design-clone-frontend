@@ -61,8 +61,12 @@ class WidgetSetting extends Model
      */
     public function generateEmbedCode()
     {
+        // Get the associated AI model for additional information
+        $aiModel = $this->aiModel;
+        
         $code = "<script>\n";
         $code .= "  window.chatWidgetSettings = {\n";
+        $code .= "    widgetId: \"{$this->id}\",\n";
         $code .= "    primaryColor: \"{$this->primary_color}\",\n";
         $code .= "    secondaryColor: \"{$this->secondary_color}\",\n";
         $code .= "    fontFamily: \"{$this->font_family}\",\n";
@@ -74,10 +78,15 @@ class WidgetSetting extends Model
         $code .= "    placeholderText: \"" . addslashes($this->placeholder_text) . "\",\n";
         $code .= "    allowAttachments: " . ($this->allow_attachments ? 'true' : 'false') . ",\n";
         $code .= "    responseDelay: {$this->response_delay},\n";
-        $code .= "    aiModelId: {$this->ai_model_id}\n";
+        $code .= "    aiModelId: {$this->ai_model_id},\n";
+        if ($aiModel) {
+            $code .= "    aiModelName: \"" . addslashes($aiModel->name) . "\",\n";
+            $code .= "    aiModelProvider: \"" . addslashes($aiModel->provider) . "\",\n";
+        }
+        $code .= "    apiEndpoint: \"" . url('/api/widget/chat') . "\"\n";
         $code .= "  };\n";
         $code .= "</script>\n";
-        $code .= "<script src=\"https://cdn.example.com/chat-widget.js\" async></script>";
+        $code .= "<script src=\"" . url('/js/chat-widget.js') . "\" async></script>";
 
         return $code;
     }

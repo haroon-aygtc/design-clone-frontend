@@ -9,6 +9,7 @@ use App\Services\AIModelService;
 use App\Repositories\AIModelRepository;
 use App\Services\WidgetSettingService;
 use App\Repositories\WidgetSettingRepository;
+use App\Services\WidgetChatService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +36,13 @@ class AppServiceProvider extends ServiceProvider
         
         $this->app->bind(WidgetSettingService::class, function ($app) {
             return new WidgetSettingService(
+                $app->make(WidgetSettingRepository::class)
+            );
+        });
+        
+        $this->app->bind(WidgetChatService::class, function ($app) {
+            return new WidgetChatService(
+                $app->make(AIModelService::class),
                 $app->make(WidgetSettingRepository::class)
             );
         });

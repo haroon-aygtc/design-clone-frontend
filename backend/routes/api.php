@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\AIModelController;
 use App\Http\Controllers\WidgetSettingController;
+use App\Http\Controllers\WidgetChatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -52,3 +53,7 @@ Route::prefix('widget-settings')->group(function () {
     Route::get('/{id}/embed-code', [WidgetSettingController::class, 'generateEmbedCode']);
 });
 
+// Widget Chat routes
+Route::prefix('widget')->group(function () {
+    Route::post('/chat', [WidgetChatController::class, 'processMessage']);
+});

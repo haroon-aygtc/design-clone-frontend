@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Copy, Code } from "lucide-react";
+import { Check, Copy, Code, Bot } from "lucide-react";
 import { useState } from "react";
 
 interface EmbeddingTabProps {
@@ -59,10 +59,25 @@ export function EmbeddingTab({ embedCode, updatePreview }: EmbeddingTabProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-base font-medium mb-2">Embedding Code</h3>
-        <p className="text-sm text-gray-600 mb-4">Get the code to embed your chat widget on any website</p>
+        <p className="text-sm text-gray-600 mb-4">Get the code to embed your AI-powered chat widget on any website</p>
       </div>
 
       <div className="space-y-4">
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <Bot className="h-5 w-5 text-blue-500 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-sm">AI Integration Ready</h4>
+                <p className="text-xs text-gray-600 mt-1">
+                  This widget is configured to use your selected AI model. The embed code includes all necessary
+                  configurations for the AI to process messages automatically.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="iframe" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-2">
             <TabsTrigger value="iframe">iFrame Integration</TabsTrigger>
@@ -167,6 +182,24 @@ export function EmbeddingTab({ embedCode, updatePreview }: EmbeddingTabProps) {
         </Tabs>
 
         <div>
+          <h4 className="text-base font-medium mb-2">How It Works</h4>
+          <ol className="list-decimal list-inside space-y-2 text-sm">
+            <li>
+              <span className="font-medium">Copy and paste</span>: Add the embed code to your website
+            </li>
+            <li>
+              <span className="font-medium">Automatic connection</span>: The widget connects to our AI backend
+            </li>
+            <li>
+              <span className="font-medium">User interaction</span>: Visitors chat with your configured AI model
+            </li>
+            <li>
+              <span className="font-medium">Real-time responses</span>: The AI responds based on your settings
+            </li>
+          </ol>
+        </div>
+
+        <div>
           <h4 className="text-base font-medium mb-2">Installation Instructions</h4>
           <div className="space-y-4">
             <div>
@@ -183,7 +216,7 @@ export function EmbeddingTab({ embedCode, updatePreview }: EmbeddingTabProps) {
             </div>
             <div>
               <h5 className="text-sm font-medium mb-1">3. Save and publish your website</h5>
-              <p className="text-xs text-gray-600">The chat widget will automatically appear on your site.</p>
+              <p className="text-xs text-gray-600">The AI-powered chat widget will automatically appear on your site.</p>
             </div>
           </div>
         </div>
