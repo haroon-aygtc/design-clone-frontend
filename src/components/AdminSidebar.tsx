@@ -4,20 +4,20 @@ import {
   LayoutDashboard, 
   Settings, 
   Users, 
-  AiModels, 
+  Bot, 
   LogOut, 
-  Webhook as WidgetConfig,
-  ContextRules,
-  CreateRule,
-  ManageRules,
-  TestRules,
-  PromptTemplates,
-  WebScraping,
-  EmbedCode,
-  Analytics,
-  ApiKeys,
-  AiConfiguration,
-  UserManagement
+  Webhook, 
+  FileText,
+  PlusCircle,
+  List,
+  TestTube,
+  FileCode,
+  Globe,
+  Code,
+  BarChart,
+  Key,
+  Cog,
+  UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,62 +37,62 @@ const AdminSidebar = () => {
     { 
       name: "Tutorials", 
       path: "/admin/tutorials", 
-      icon: <PromptTemplates className="w-5 h-5" /> 
+      icon: <FileText className="w-5 h-5" /> 
     },
     { 
       name: "Widget Config", 
       path: "/admin/widget-config", 
-      icon: <WidgetConfig className="w-5 h-5" /> 
+      icon: <Webhook className="w-5 h-5" /> 
     },
     { 
       name: "Context Rules", 
       path: "/admin/context-rules", 
-      icon: <ContextRules className="w-5 h-5" />,
+      icon: <FileCode className="w-5 h-5" />,
       submenu: [
-        { name: "Create Rule", path: "/admin/context-rules/create", icon: <CreateRule className="w-4 h-4" /> },
-        { name: "Manage Rules", path: "/admin/context-rules/manage", icon: <ManageRules className="w-4 h-4" /> },
-        { name: "Test Rules", path: "/admin/context-rules/test", icon: <TestRules className="w-4 h-4" /> },
+        { name: "Create Rule", path: "/admin/context-rules/create", icon: <PlusCircle className="w-4 h-4" /> },
+        { name: "Manage Rules", path: "/admin/context-rules/manage", icon: <List className="w-4 h-4" /> },
+        { name: "Test Rules", path: "/admin/context-rules/test", icon: <TestTube className="w-4 h-4" /> },
       ]
     },
     { 
       name: "Prompt Templates", 
       path: "/admin/prompt-templates", 
-      icon: <PromptTemplates className="w-5 h-5" /> 
+      icon: <FileText className="w-5 h-5" /> 
     },
     { 
       name: "Web Scraping", 
       path: "/admin/web-scraping", 
-      icon: <WebScraping className="w-5 h-5" /> 
+      icon: <Globe className="w-5 h-5" /> 
     },
     { 
       name: "Embed Code", 
       path: "/admin/embed-code", 
-      icon: <EmbedCode className="w-5 h-5" /> 
+      icon: <Code className="w-5 h-5" /> 
     },
     { 
       name: "Analytics", 
       path: "/admin/analytics", 
-      icon: <Analytics className="w-5 h-5" /> 
+      icon: <BarChart className="w-5 h-5" /> 
     },
     { 
       name: "API Keys", 
       path: "/admin/api-keys", 
-      icon: <ApiKeys className="w-5 h-5" /> 
+      icon: <Key className="w-5 h-5" /> 
     },
     { 
       name: "AI Configuration", 
       path: "/admin/ai-configuration", 
-      icon: <AiConfiguration className="w-5 h-5" /> 
+      icon: <Cog className="w-5 h-5" /> 
     },
     { 
       name: "AI Models", 
       path: "/admin/ai-models", 
-      icon: <AiModels className="w-5 h-5" /> 
+      icon: <Bot className="w-5 h-5" /> 
     },
     { 
       name: "User Management", 
       path: "/admin/user-management", 
-      icon: <UserManagement className="w-5 h-5" /> 
+      icon: <UserCog className="w-5 h-5" /> 
     },
   ];
 
@@ -100,7 +100,7 @@ const AdminSidebar = () => {
     <div className="admin-sidebar w-64 min-h-screen flex flex-col">
       <div className="p-6 flex items-center gap-2 border-b border-admin-highlight">
         <div className="w-6 h-6 rounded-md flex items-center justify-center bg-admin-highlight text-white">
-          <EmbedCode className="w-4 h-4" />
+          <Code className="w-4 h-4" />
         </div>
         <span className="font-semibold text-lg text-white">ChatAdmin</span>
       </div>

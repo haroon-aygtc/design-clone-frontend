@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmbedCode } from "lucide-react";
+import { Code } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ const Login = () => {
       {/* Left panel */}
       <div className="hidden md:flex md:w-1/2 bg-admin-navy text-white p-10 flex-col items-center justify-center">
         <div className="mb-6 w-20 h-20 rounded-full bg-gray-700/30 flex items-center justify-center">
-          <EmbedCode className="w-10 h-10" />
+          <Code className="w-10 h-10" />
         </div>
         <h1 className="text-3xl font-bold mb-4">Welcome Back</h1>
         <p className="text-center text-gray-300 max-w-xs mb-8">
@@ -60,7 +60,7 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <div className="inline-block p-3 rounded-full bg-gray-100 mb-3">
-              <EmbedCode className="w-6 h-6 text-admin-navy" />
+              <Code className="w-6 h-6 text-admin-navy" />
             </div>
             <h2 className="text-2xl font-semibold">Admin Login</h2>
             <p className="text-gray-600 mt-1">Enter your credentials to access the admin dashboard</p>

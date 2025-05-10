@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AiModels, Plus, Settings, Trash2 } from "lucide-react";
+import { Bot, Plus, Settings, Trash2 } from "lucide-react";
 
 const AIModelsPage = () => {
   const [activeTab, setActiveTab] = useState("available");
@@ -92,7 +92,7 @@ const AIModelsPage = () => {
                       <CardDescription>{model.provider}</CardDescription>
                     </div>
                     <div className="h-10 w-10 rounded-full bg-admin-navy/10 flex items-center justify-center">
-                      <AiModels className="h-5 w-5 text-admin-navy" />
+                      <Bot className="h-5 w-5 text-admin-navy" />
                     </div>
                   </div>
                 </CardHeader>

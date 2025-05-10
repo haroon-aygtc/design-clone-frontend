@@ -4,7 +4,7 @@ import AdminLayout from "@/layouts/AdminLayout";
 import StatCard from "@/components/StatCard";
 import QuickActionCard from "@/components/QuickActionCard";
 import SystemStatusCard from "@/components/SystemStatusCard";
-import { Settings, EmbedCode, ContextRules } from "lucide-react";
+import { Settings, Code, FileCode } from "lucide-react";
 
 const Dashboard = () => {
   // Mock data - would come from API in a real application
@@ -37,12 +37,12 @@ const Dashboard = () => {
               />
               <QuickActionCard
                 title="Edit Context Rules"
-                icon={<ContextRules className="h-8 w-8 text-admin-navy" />}
+                icon={<FileCode className="h-8 w-8 text-admin-navy" />}
                 to="/admin/context-rules"
               />
               <QuickActionCard
                 title="Get Embed Code"
-                icon={<EmbedCode className="h-8 w-8 text-admin-navy" />}
+                icon={<Code className="h-8 w-8 text-admin-navy" />}
                 to="/admin/embed-code"
               />
             </div>
