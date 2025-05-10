@@ -72,15 +72,40 @@ export function EmbeddingTab({ embedCode, updatePreview }: EmbeddingTabProps) {
           <TabsContent value="iframe" className="mt-0">
             <Card className="relative">
               <CardContent className="p-4">
-                <div className="bg-gray-50 p-4 rounded-md font-mono text-sm overflow-x-auto">
-                  <pre className="whitespace-pre-wrap">{getIframeCode()}</pre>
+                <div className="code-editor-container">
+                  <div className="code-editor-header bg-gray-800 text-white text-xs rounded-t-md px-4 py-2 flex justify-between items-center">
+                    <span className="opacity-70">HTML</span>
+                    <div className="flex space-x-1.5">
+                      <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-900 p-4 rounded-b-md font-mono text-sm overflow-x-auto text-gray-200">
+                    <pre className="whitespace-pre-wrap">
+                      {getIframeCode().split('\n').map((line, i) => {
+                        // Basic syntax highlighting
+                        const highlightedLine = line
+                          .replace(/(&lt;|<)([\/\w\s="':-]*)(&gt;|>)/g, '<span class="text-blue-400">$1$2$3</span>')
+                          .replace(/(".*?")/g, '<span class="text-green-400">$1</span>')
+                          .replace(/(<!--.*?-->)/g, '<span class="text-gray-500">$1</span>');
+                        
+                        return (
+                          <div key={i} className="flex">
+                            <span className="text-gray-500 w-8 inline-block select-none">{i + 1}</span>
+                            <span dangerouslySetInnerHTML={{ __html: highlightedLine }}></span>
+                          </div>
+                        );
+                      })}
+                    </pre>
+                  </div>
                 </div>
                 <div className="mt-3 text-xs text-gray-500">
                   <p>Complete isolation from your website's styles and scripts.</p>
                   <p>Best for maximum compatibility and security.</p>
                 </div>
                 <Button 
-                  className="absolute top-4 right-4" 
+                  className="absolute top-4 right-4 z-10" 
                   variant="outline" 
                   size="sm"
                   onClick={copyToClipboard}
@@ -95,15 +120,40 @@ export function EmbeddingTab({ embedCode, updatePreview }: EmbeddingTabProps) {
           <TabsContent value="web-component" className="mt-0">
             <Card className="relative">
               <CardContent className="p-4">
-                <div className="bg-gray-50 p-4 rounded-md font-mono text-sm overflow-x-auto">
-                  <pre className="whitespace-pre-wrap">{getWebComponentCode()}</pre>
+                <div className="code-editor-container">
+                  <div className="code-editor-header bg-gray-800 text-white text-xs rounded-t-md px-4 py-2 flex justify-between items-center">
+                    <span className="opacity-70">HTML</span>
+                    <div className="flex space-x-1.5">
+                      <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-900 p-4 rounded-b-md font-mono text-sm overflow-x-auto text-gray-200">
+                    <pre className="whitespace-pre-wrap">
+                      {getWebComponentCode().split('\n').map((line, i) => {
+                        // Basic syntax highlighting
+                        const highlightedLine = line
+                          .replace(/(&lt;|<)([\/\w\s="':-]*)(&gt;|>)/g, '<span class="text-blue-400">$1$2$3</span>')
+                          .replace(/(".*?")/g, '<span class="text-green-400">$1</span>')
+                          .replace(/(<!--.*?-->)/g, '<span class="text-gray-500">$1</span>');
+                        
+                        return (
+                          <div key={i} className="flex">
+                            <span className="text-gray-500 w-8 inline-block select-none">{i + 1}</span>
+                            <span dangerouslySetInnerHTML={{ __html: highlightedLine }}></span>
+                          </div>
+                        );
+                      })}
+                    </pre>
+                  </div>
                 </div>
                 <div className="mt-3 text-xs text-gray-500">
                   <p>Uses Shadow DOM to encapsulate styles and scripts.</p>
                   <p>Better performance and more seamless integration.</p>
                 </div>
                 <Button 
-                  className="absolute top-4 right-4" 
+                  className="absolute top-4 right-4 z-10" 
                   variant="outline" 
                   size="sm"
                   onClick={copyToClipboard}
