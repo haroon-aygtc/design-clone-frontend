@@ -49,9 +49,15 @@ class WidgetChatService
             // Record usage of the model
             $this->aiModelService->incrementUsageCount($aiModelId);
             
+            // Prepare message context with widget settings for personalization
+            $enhancedContext = array_merge($context, [
+                'widget_name' => $widgetSetting->name,
+                'initial_message' => $widgetSetting->initial_message,
+            ]);
+            
             // In a real implementation, this would call the actual AI API
-            // For now, we'll simulate a response
-            $response = $this->simulateAIResponse($message, $aiModel->name);
+            // with the appropriate model configuration
+            $response = $this->simulateAIResponse($message, $aiModel, $enhancedContext);
             
             return [
                 'success' => true,
@@ -74,15 +80,19 @@ class WidgetChatService
      * Simulate an AI response (temporary implementation)
      *
      * @param string $message
-     * @param string $modelName
+     * @param object $aiModel
+     * @param array $context
      * @return string
      */
-    private function simulateAIResponse(string $message, string $modelName): string
+    private function simulateAIResponse(string $message, $aiModel, array $context = []): string
     {
-        // In a real implementation, this would call the AI provider's API
+        // In a real implementation, this would use the model's configuration
+        // to call the appropriate API with the right parameters
+        $modelConfig = $aiModel->configuration ?? [];
+        
         $responses = [
             'hello' => "Hello! How can I assist you today?",
-            'how are you' => "I'm an AI assistant powered by $modelName. I don't have feelings, but I'm ready to help you!",
+            'how are you' => "I'm an AI assistant powered by {$aiModel->name}. I don't have feelings, but I'm ready to help you!",
             'help' => "I can answer questions, provide information, or assist with tasks. What do you need help with?",
         ];
         
@@ -94,6 +104,9 @@ class WidgetChatService
             }
         }
         
-        return "Thanks for your message. I'm currently using $modelName to process your requests. How can I help you further?";
+        // Include widget context in response if available
+        $widgetName = isset($context['widget_name']) ? " through {$context['widget_name']}" : "";
+        
+        return "Thanks for your message{$widgetName}. I'm currently using {$aiModel->name} to process your requests. How can I help you further?";
     }
 }

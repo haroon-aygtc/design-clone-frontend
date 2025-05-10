@@ -29,6 +29,7 @@ class WidgetChatController extends Controller
             'widget_id' => 'required|integer|exists:widget_settings,id',
             'message' => 'required|string',
             'context' => 'nullable|array',
+            'session_id' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

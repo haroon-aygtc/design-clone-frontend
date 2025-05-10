@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import AdminLayout from "@/layouts/AdminLayout";
 import { WidgetTabs } from "@/components/widget-config/WidgetTabs";
 import { WidgetPreview } from "@/components/widget-config/WidgetPreview";
+import { AIModelsProvider } from "@/context/AIModelsContext";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Save } from "lucide-react";
 
 const WidgetConfigPage = () => {
   const [primaryColor, setPrimaryColor] = useState("#6366F1");
@@ -18,6 +22,9 @@ const WidgetConfigPage = () => {
   const [allowAttachments, setAllowAttachments] = useState(true);
   const [embedCode, setEmbedCode] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [selectedModelId, setSelectedModelId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   // Update preview with loading animation
   const updatePreview = () => {
@@ -41,7 +48,8 @@ const WidgetConfigPage = () => {
     initialMessage: "${initialMessage}",
     placeholderText: "${placeholderText}",
     allowAttachments: ${allowAttachments},
-    responseDelay: ${responseDelay[0]}
+    responseDelay: ${responseDelay[0]},
+    aiModelId: "${selectedModelId}"
   };
 </script>
 <script src="https://cdn.example.com/chat-widget.js" async></script>`;
@@ -58,42 +66,67 @@ const WidgetConfigPage = () => {
     initialMessage,
     placeholderText,
     allowAttachments,
-    responseDelay
+    responseDelay,
+    selectedModelId
   ]);
+
+  const handleSaveSettings = () => {
+    setSaving(true);
+    
+    // Simulate API call to save settings
+    setTimeout(() => {
+      setSaving(false);
+      toast({
+        title: "Settings saved",
+        description: "Your widget configuration has been saved successfully.",
+      });
+    }, 1000);
+  };
 
   return (
     <AdminLayout title="Widget Config">
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleSaveSettings} disabled={saving}>
+          <Save className="h-4 w-4 mr-2" />
+          {saving ? "Saving..." : "Save Configuration"}
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
             <h2 className="text-xl font-semibold mb-4">Widget Configurator</h2>
 
-            <WidgetTabs
-              primaryColor={primaryColor}
-              setPrimaryColor={setPrimaryColor}
-              secondaryColor={secondaryColor}
-              setSecondaryColor={setSecondaryColor}
-              fontFamily={fontFamily}
-              setFontFamily={setFontFamily}
-              borderRadius={borderRadius}
-              setBorderRadius={setBorderRadius}
-              chatIconSize={chatIconSize}
-              setChatIconSize={setChatIconSize}
-              responseDelay={responseDelay}
-              setResponseDelay={setResponseDelay}
-              autoOpen={autoOpen}
-              setAutoOpen={setAutoOpen}
-              position={position}
-              setPosition={setPosition}
-              allowAttachments={allowAttachments}
-              setAllowAttachments={setAllowAttachments}
-              initialMessage={initialMessage}
-              setInitialMessage={setInitialMessage}
-              placeholderText={placeholderText}
-              setPlaceholderText={setPlaceholderText}
-              embedCode={embedCode}
-              updatePreview={updatePreview}
-            />
+            <AIModelsProvider>
+              <WidgetTabs
+                primaryColor={primaryColor}
+                setPrimaryColor={setPrimaryColor}
+                secondaryColor={secondaryColor}
+                setSecondaryColor={setSecondaryColor}
+                fontFamily={fontFamily}
+                setFontFamily={setFontFamily}
+                borderRadius={borderRadius}
+                setBorderRadius={setBorderRadius}
+                chatIconSize={chatIconSize}
+                setChatIconSize={setChatIconSize}
+                responseDelay={responseDelay}
+                setResponseDelay={setResponseDelay}
+                autoOpen={autoOpen}
+                setAutoOpen={setAutoOpen}
+                position={position}
+                setPosition={setPosition}
+                allowAttachments={allowAttachments}
+                setAllowAttachments={setAllowAttachments}
+                initialMessage={initialMessage}
+                setInitialMessage={setInitialMessage}
+                placeholderText={placeholderText}
+                setPlaceholderText={setPlaceholderText}
+                embedCode={embedCode}
+                updatePreview={updatePreview}
+                selectedModelId={selectedModelId}
+                setSelectedModelId={setSelectedModelId}
+              />
+            </AIModelsProvider>
           </div>
         </div>
         

@@ -82,6 +82,13 @@ class WidgetSetting extends Model
         if ($aiModel) {
             $code .= "    aiModelName: \"" . addslashes($aiModel->name) . "\",\n";
             $code .= "    aiModelProvider: \"" . addslashes($aiModel->provider) . "\",\n";
+            
+            // Include model capabilities if available
+            if (isset($aiModel->configuration) && is_array($aiModel->configuration)) {
+                if (isset($aiModel->configuration['capabilities'])) {
+                    $code .= "    aiModelCapabilities: " . json_encode($aiModel->configuration['capabilities']) . ",\n";
+                }
+            }
         }
         $code .= "    apiEndpoint: \"" . url('/api/widget/chat') . "\"\n";
         $code .= "  };\n";
