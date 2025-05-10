@@ -1,6 +1,8 @@
 
-import { MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { MessageSquare, Smartphone, Tablet, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WidgetPreviewProps {
   previewLoading: boolean;
@@ -12,6 +14,8 @@ interface WidgetPreviewProps {
   placeholderText: string;
 }
 
+type DeviceType = "desktop" | "mobile" | "tablet";
+
 export function WidgetPreview({
   previewLoading,
   primaryColor,
@@ -21,10 +25,73 @@ export function WidgetPreview({
   initialMessage,
   placeholderText,
 }: WidgetPreviewProps) {
+  const isMobile = useIsMobile();
+  const [selectedDevice, setSelectedDevice] = useState<DeviceType>("desktop");
+  const [showExpanded, setShowExpanded] = useState(true);
+
+  // Calculate preview container styles based on selected device
+  const getPreviewContainerStyles = () => {
+    switch (selectedDevice) {
+      case "mobile":
+        return {
+          maxWidth: "320px",
+          height: "580px",
+          margin: "0 auto",
+          border: "10px solid #222",
+          borderRadius: "20px",
+        };
+      case "tablet":
+        return {
+          maxWidth: "768px",
+          height: "500px",
+          margin: "0 auto",
+          border: "10px solid #222",
+          borderRadius: "12px",
+        };
+      default:
+        return {};
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border sticky top-6">
       <h2 className="text-lg font-semibold mb-4">Live Preview</h2>
-      <div className="border-2 border-dashed border-gray-200 rounded-lg min-h-[500px] bg-gray-50 relative">
+      
+      {/* Device preview selection */}
+      <div className="mb-4 flex justify-center gap-2">
+        <Button 
+          variant={selectedDevice === "desktop" ? "default" : "outline"} 
+          size="sm" 
+          onClick={() => setSelectedDevice("desktop")}
+          className="flex items-center gap-2"
+        >
+          <Monitor size={16} />
+          {!isMobile && <span>Desktop</span>}
+        </Button>
+        <Button 
+          variant={selectedDevice === "tablet" ? "default" : "outline"} 
+          size="sm" 
+          onClick={() => setSelectedDevice("tablet")}
+          className="flex items-center gap-2"
+        >
+          <Tablet size={16} />
+          {!isMobile && <span>Tablet</span>}
+        </Button>
+        <Button 
+          variant={selectedDevice === "mobile" ? "default" : "outline"} 
+          size="sm" 
+          onClick={() => setSelectedDevice("mobile")}
+          className="flex items-center gap-2"
+        >
+          <Smartphone size={16} />
+          {!isMobile && <span>Mobile</span>}
+        </Button>
+      </div>
+      
+      <div 
+        className="border-2 border-dashed border-gray-200 rounded-lg min-h-[500px] bg-gray-50 relative"
+        style={getPreviewContainerStyles()}
+      >
         {previewLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-spin rounded-full w-8 h-8 border-b-2 border-gray-800"></div>
@@ -40,6 +107,7 @@ export function WidgetPreview({
                   width: `${chatIconSize}px`,
                   height: `${chatIconSize}px`,
                 }}
+                onClick={() => setShowExpanded(!showExpanded)}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <MessageSquare className="text-white" size={chatIconSize[0] * 0.5} />
@@ -47,54 +115,72 @@ export function WidgetPreview({
               </div>
 
               {/* Expanded Chat Widget */}
-              <div 
-                className="w-72 absolute bottom-20 right-4 rounded-lg shadow-lg overflow-hidden flex flex-col bg-white"
-                style={{
-                  borderRadius: `${borderRadius[0]}px`,
-                  height: '300px',
-                }}
-              >
+              {showExpanded && (
                 <div 
-                  className="p-3 text-white flex justify-between items-center"
-                  style={{ backgroundColor: primaryColor }}
+                  className="w-72 absolute bottom-20 right-4 rounded-lg shadow-lg overflow-hidden flex flex-col bg-white"
+                  style={{
+                    borderRadius: `${borderRadius[0]}px`,
+                    height: '300px',
+                    maxWidth: selectedDevice === "mobile" ? "85%" : "300px",
+                  }}
                 >
-                  <h3 className={`font-${fontFamily.toLowerCase()} text-sm font-medium`}>Chat with Us</h3>
-                  <div className="flex space-x-1">
-                    <button className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10">
-                      <span className="sr-only">Minimize</span>
-                      <span>−</span>
+                  <div 
+                    className="p-3 text-white flex justify-between items-center"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    <h3 className={`font-${fontFamily.toLowerCase()} text-sm font-medium`}>Chat with Us</h3>
+                    <div className="flex space-x-1">
+                      <button 
+                        className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10"
+                        onClick={() => setShowExpanded(false)}
+                      >
+                        <span className="sr-only">Minimize</span>
+                        <span>−</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 p-3 overflow-y-auto flex flex-col">
+                    <div className="bg-gray-100 text-gray-800 p-2 rounded-lg mb-2 max-w-[80%] text-xs">
+                      {initialMessage}
+                    </div>
+                  </div>
+
+                  <div className="border-t p-2 flex">
+                    <input 
+                      type="text" 
+                      placeholder={placeholderText}
+                      className="border rounded-l-md px-2 py-1 text-xs flex-grow"
+                      style={{ borderRadius: `${borderRadius[0] / 1.5}px` }}
+                    />
+                    <button 
+                      className="text-white rounded-r-md px-3 py-1 text-xs"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      Send
                     </button>
                   </div>
                 </div>
-
-                <div className="flex-1 p-3 overflow-y-auto flex flex-col">
-                  <div className="bg-gray-100 text-gray-800 p-2 rounded-lg mb-2 max-w-[80%] text-xs">
-                    {initialMessage}
-                  </div>
-                </div>
-
-                <div className="border-t p-2 flex">
-                  <input 
-                    type="text" 
-                    placeholder={placeholderText}
-                    className="border rounded-l-md px-2 py-1 text-xs flex-grow"
-                    style={{ borderRadius: `${borderRadius[0] / 1.5}px` }}
-                  />
-                  <button 
-                    className="text-white rounded-r-md px-3 py-1 text-xs"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Preview Controls */}
             <div className="p-3 border-t border-gray-200 bg-white">
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm">Minimized View</Button>
-                <Button variant="outline" size="sm">Expanded View</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowExpanded(false)}
+                >
+                  Minimized View
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowExpanded(true)}
+                >
+                  Expanded View
+                </Button>
               </div>
             </div>
           </div>
