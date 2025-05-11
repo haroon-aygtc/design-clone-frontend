@@ -53,7 +53,7 @@ export function AIModelTab({ selectedModelId, setSelectedModelId, updatePreview 
             handleModelChange={handleModelChange}
             loading={loading}
           />
-          <ModelInfoCard />
+          <ModelInfoCard selectedModelId={selectedModelId} />
         </div>
       )}
     </div>
