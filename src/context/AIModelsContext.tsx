@@ -2,14 +2,15 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { AIModel, AIModelConfiguration } from '@/types/aiModels';
 import aiModelService from '@/services/aiModelService';
+import { useToast } from '@/components/ui/use-toast';
 
 interface AIModelsContextType {
   availableModels: AIModel[];
   connectedModels: AIModel[];
-  connectModel: (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => void;
+  connectModel: (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => Promise<void>;
   disconnectModel: (modelId: string) => void;
-  updateModelConfig: (modelId: string, config: Partial<AIModelConfiguration>) => void;
-  toggleModelActive: (modelId: string) => void;
+  updateModelConfig: (modelId: string, config: Partial<AIModelConfiguration>) => Promise<void>;
+  toggleModelActive: (modelId: string) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -21,6 +22,7 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
   const [connectedModels, setConnectedModels] = useState<AIModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Fetch models on component mount
   useEffect(() => {
@@ -28,74 +30,99 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       try {
-        // In a production environment, these would call the real API
-        const availableModelsData = await aiModelService.getAvailableModels();
-        const connectedModelsData = await aiModelService.getConnectedModels();
+        const [availableModelsData, connectedModelsData] = await Promise.all([
+          aiModelService.getAvailableModels(),
+          aiModelService.getConnectedModels()
+        ]);
         
         setAvailableModels(availableModelsData);
         setConnectedModels(connectedModelsData);
       } catch (err) {
-        console.error("Error fetching models:", err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        console.error("Error fetching models:", errorMessage);
         setError("Failed to load AI models. Please try again later.");
+        toast({
+          title: "Error",
+          description: "Failed to load AI models. Please try again later.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchModels();
-  }, []);
+  }, [toast]);
 
   const connectModel = async (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => {
     // Check if model is already connected
     if (connectedModels.some(m => m.id === model.id)) {
-      console.warn('Model is already connected');
+      toast({
+        title: "Warning",
+        description: "This model is already connected.",
+        variant: "default",
+      });
       return;
     }
 
     try {
       setLoading(true);
-      // In production, this would call the real API
-      await aiModelService.connectModel(model.id, apiKey, configuration);
-      
-      const connectedModel: AIModel = {
-        ...model,
-        apiKey,
-        isActive: true,
-        usageCount: 0,
-        lastUsed: 'Just now',
-        status: 'Connected',
-        configuration
-      };
-
+      const connectedModel = await aiModelService.connectModel(model.id, apiKey, configuration);
       setConnectedModels([...connectedModels, connectedModel]);
+      toast({
+        title: "Success",
+        description: `${model.name} has been successfully connected.`,
+        variant: "default",
+      });
     } catch (err) {
-      console.error("Error connecting model:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error connecting model:", errorMessage);
       setError("Failed to connect model. Please check your API key and try again.");
+      toast({
+        title: "Error",
+        description: "Failed to connect model. Please check your API key and try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const disconnectModel = (modelId: string) => {
+    // In a real implementation, this would call an API to disconnect the model
+    // For now, we'll just remove it from the local state
     setConnectedModels(connectedModels.filter(model => model.id !== modelId));
+    toast({
+      title: "Model Disconnected",
+      description: "The AI model has been disconnected.",
+      variant: "default",
+    });
   };
 
   const updateModelConfig = async (modelId: string, config: Partial<AIModelConfiguration>) => {
     try {
       setLoading(true);
-      // In production, this would call the real API
-      await aiModelService.updateModelConfig(modelId, config);
+      const updatedModel = await aiModelService.updateModelConfig(modelId, config);
       
       setConnectedModels(
         connectedModels.map(model => 
-          model.id === modelId
-            ? { ...model, configuration: { ...model.configuration, ...config } }
-            : model
+          model.id === modelId ? updatedModel : model
         )
       );
+      
+      toast({
+        title: "Config Updated",
+        description: "Model configuration has been updated successfully.",
+      });
     } catch (err) {
-      console.error("Error updating model config:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error updating model config:", errorMessage);
       setError("Failed to update model configuration.");
+      toast({
+        title: "Error",
+        description: "Failed to update model configuration.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -104,19 +131,27 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
   const toggleModelActive = async (modelId: string) => {
     try {
       setLoading(true);
-      // In production, this would call the real API
-      await aiModelService.toggleModelActive(modelId);
+      const updatedModel = await aiModelService.toggleModelActive(modelId);
       
       setConnectedModels(
         connectedModels.map(model => 
-          model.id === modelId
-            ? { ...model, isActive: !model.isActive }
-            : model
+          model.id === modelId ? updatedModel : model
         )
       );
+      
+      toast({
+        title: "Status Updated",
+        description: `Model is now ${updatedModel.isActive ? 'active' : 'inactive'}.`,
+      });
     } catch (err) {
-      console.error("Error toggling model active state:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error toggling model active state:", errorMessage);
       setError("Failed to update model status.");
+      toast({
+        title: "Error",
+        description: "Failed to update model status.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
