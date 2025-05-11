@@ -7,6 +7,7 @@ import { AIModelsProvider } from "@/context/AIModelsContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Save } from "lucide-react";
+import widgetSettingService, { WidgetSetting } from "@/services/widgetSettingService";
 
 const WidgetConfigPage = () => {
   const [primaryColor, setPrimaryColor] = useState("#6366F1");
@@ -24,6 +25,7 @@ const WidgetConfigPage = () => {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [selectedModelId, setSelectedModelId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [settingId, setSettingId] = useState<number | undefined>(undefined);
   const { toast } = useToast();
 
   // Update preview with loading animation
@@ -33,6 +35,38 @@ const WidgetConfigPage = () => {
       setPreviewLoading(false);
     }, 800);
   };
+
+  // Load settings when selectedModelId changes
+  useEffect(() => {
+    if (selectedModelId) {
+      const loadSettings = async () => {
+        try {
+          const settings = await widgetSettingService.getWidgetSettings(selectedModelId);
+          setSettingId(settings.id);
+          setPrimaryColor(settings.primary_color);
+          setSecondaryColor(settings.secondary_color);
+          setFontFamily(settings.font_family);
+          setBorderRadius([settings.border_radius]);
+          setChatIconSize([settings.chat_icon_size]);
+          setResponseDelay([settings.response_delay]);
+          setAutoOpen(settings.auto_open);
+          setPosition(settings.position);
+          setAllowAttachments(settings.allow_attachments);
+          setInitialMessage(settings.initial_message || "");
+          setPlaceholderText(settings.placeholder_text);
+        } catch (error) {
+          console.error("Failed to load settings", error);
+          toast({
+            title: "Error",
+            description: "Could not load widget settings.",
+            variant: "destructive",
+          });
+        }
+      };
+
+      loadSettings();
+    }
+  }, [selectedModelId, toast]);
 
   // Generate embed code based on current settings
   useEffect(() => {
@@ -70,17 +104,56 @@ const WidgetConfigPage = () => {
     selectedModelId
   ]);
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
+    if (!selectedModelId) {
+      toast({
+        title: "Error",
+        description: "Please select an AI model first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSaving(true);
     
-    // Simulate API call to save settings
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      // Prepare settings object
+      const settingsData: WidgetSetting = {
+        id: settingId,
+        ai_model_id: parseInt(selectedModelId),
+        name: `Widget for ${selectedModelId}`,
+        primary_color: primaryColor,
+        secondary_color: secondaryColor,
+        font_family: fontFamily,
+        border_radius: borderRadius[0],
+        chat_icon_size: chatIconSize[0],
+        response_delay: responseDelay[0],
+        auto_open: autoOpen,
+        position: position,
+        allow_attachments: allowAttachments,
+        initial_message: initialMessage,
+        placeholder_text: placeholderText,
+        suggested_questions: ["What services do you offer?", "How do I contact support?"]
+      };
+      
+      // Save to API
+      const response = await widgetSettingService.saveWidgetSettings(settingsData);
+      setSettingId(response.id);
+      
       toast({
         title: "Settings saved",
         description: "Your widget configuration has been saved successfully.",
       });
-    }, 1000);
+    } catch (error) {
+      console.error("Failed to save settings", error);
+      toast({
+        title: "Error",
+        description: "Could not save widget configuration.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

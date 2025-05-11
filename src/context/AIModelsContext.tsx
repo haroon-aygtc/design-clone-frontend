@@ -1,92 +1,7 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { AIModel, AIModelConfiguration } from '@/types/aiModels';
-
-// Initial mock data for available models
-const initialAvailableModels: AIModel[] = [
-  { 
-    id: '1', 
-    name: 'GPT-4', 
-    provider: 'OpenAI', 
-    type: 'Large Language Model', 
-    description: 'Latest GPT model with improved reasoning and instruction following',
-    status: 'Available' 
-  },
-  { 
-    id: '2', 
-    name: 'Claude 3', 
-    provider: 'Anthropic', 
-    type: 'Large Language Model', 
-    description: 'Advanced conversation model with strong reasoning abilities',
-    status: 'Available' 
-  },
-  { 
-    id: '3', 
-    name: 'Gemini Pro', 
-    provider: 'Google', 
-    type: 'Multimodal', 
-    description: 'Multimodal model supporting text, images, and video inputs',
-    status: 'Available' 
-  },
-  { 
-    id: '4', 
-    name: 'DALL-E 3', 
-    provider: 'OpenAI', 
-    type: 'Image Generation', 
-    description: 'Creates high-quality images from textual descriptions',
-    status: 'Available' 
-  },
-  { 
-    id: '5', 
-    name: 'Whisper', 
-    provider: 'OpenAI', 
-    type: 'Speech Recognition', 
-    description: 'Accurate speech-to-text transcription and translation',
-    status: 'Available' 
-  },
-];
-
-// Initial mock data for connected models
-const initialConnectedModels: AIModel[] = [
-  { 
-    id: '1', 
-    name: 'GPT-4', 
-    provider: 'OpenAI', 
-    type: 'Large Language Model',
-    description: 'Latest GPT model with improved reasoning and instruction following',
-    apiKey: 'sk-••••••••••••••••••••••', 
-    isActive: true,
-    usageCount: 1243,
-    lastUsed: '2 hours ago',
-    status: 'Connected',
-    configuration: {
-      temperature: 0.7,
-      maxTokens: 8000,
-      topP: 1,
-      frequencyPenalty: 0,
-      presencePenalty: 0,
-      systemPrompt: 'You are a helpful assistant.'
-    }
-  },
-  { 
-    id: '3', 
-    name: 'Gemini Pro', 
-    provider: 'Google', 
-    type: 'Multimodal',
-    description: 'Multimodal model supporting text, images, and video inputs',
-    apiKey: 'AIza••••••••••••••••••••', 
-    isActive: true,
-    usageCount: 867,
-    lastUsed: '5 mins ago',
-    status: 'Connected',
-    configuration: {
-      temperature: 0.8,
-      maxTokens: 4000,
-      topP: 0.9,
-      systemPrompt: 'Answer questions concisely and accurately.'
-    }
-  },
-];
+import aiModelService from '@/services/aiModelService';
 
 interface AIModelsContextType {
   availableModels: AIModel[];
@@ -95,56 +10,116 @@ interface AIModelsContextType {
   disconnectModel: (modelId: string) => void;
   updateModelConfig: (modelId: string, config: Partial<AIModelConfiguration>) => void;
   toggleModelActive: (modelId: string) => void;
+  loading: boolean;
+  error: string | null;
 }
 
 const AIModelsContext = createContext<AIModelsContextType | undefined>(undefined);
 
 export function AIModelsProvider({ children }: { children: ReactNode }) {
-  const [availableModels, setAvailableModels] = useState<AIModel[]>(initialAvailableModels);
-  const [connectedModels, setConnectedModels] = useState<AIModel[]>(initialConnectedModels);
+  const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
+  const [connectedModels, setConnectedModels] = useState<AIModel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const connectModel = (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => {
+  // Fetch models on component mount
+  useEffect(() => {
+    const fetchModels = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // In a production environment, these would call the real API
+        const availableModelsData = await aiModelService.getAvailableModels();
+        const connectedModelsData = await aiModelService.getConnectedModels();
+        
+        setAvailableModels(availableModelsData);
+        setConnectedModels(connectedModelsData);
+      } catch (err) {
+        console.error("Error fetching models:", err);
+        setError("Failed to load AI models. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  const connectModel = async (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => {
     // Check if model is already connected
     if (connectedModels.some(m => m.id === model.id)) {
       console.warn('Model is already connected');
       return;
     }
 
-    const connectedModel: AIModel = {
-      ...model,
-      apiKey,
-      isActive: true,
-      usageCount: 0,
-      lastUsed: 'Just now',
-      status: 'Connected',
-      configuration
-    };
+    try {
+      setLoading(true);
+      // In production, this would call the real API
+      await aiModelService.connectModel(model.id, apiKey, configuration);
+      
+      const connectedModel: AIModel = {
+        ...model,
+        apiKey,
+        isActive: true,
+        usageCount: 0,
+        lastUsed: 'Just now',
+        status: 'Connected',
+        configuration
+      };
 
-    setConnectedModels([...connectedModels, connectedModel]);
+      setConnectedModels([...connectedModels, connectedModel]);
+    } catch (err) {
+      console.error("Error connecting model:", err);
+      setError("Failed to connect model. Please check your API key and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const disconnectModel = (modelId: string) => {
     setConnectedModels(connectedModels.filter(model => model.id !== modelId));
   };
 
-  const updateModelConfig = (modelId: string, config: Partial<AIModelConfiguration>) => {
-    setConnectedModels(
-      connectedModels.map(model => 
-        model.id === modelId
-          ? { ...model, configuration: { ...model.configuration, ...config } }
-          : model
-      )
-    );
+  const updateModelConfig = async (modelId: string, config: Partial<AIModelConfiguration>) => {
+    try {
+      setLoading(true);
+      // In production, this would call the real API
+      await aiModelService.updateModelConfig(modelId, config);
+      
+      setConnectedModels(
+        connectedModels.map(model => 
+          model.id === modelId
+            ? { ...model, configuration: { ...model.configuration, ...config } }
+            : model
+        )
+      );
+    } catch (err) {
+      console.error("Error updating model config:", err);
+      setError("Failed to update model configuration.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleModelActive = (modelId: string) => {
-    setConnectedModels(
-      connectedModels.map(model => 
-        model.id === modelId
-          ? { ...model, isActive: !model.isActive }
-          : model
-      )
-    );
+  const toggleModelActive = async (modelId: string) => {
+    try {
+      setLoading(true);
+      // In production, this would call the real API
+      await aiModelService.toggleModelActive(modelId);
+      
+      setConnectedModels(
+        connectedModels.map(model => 
+          model.id === modelId
+            ? { ...model, isActive: !model.isActive }
+            : model
+        )
+      );
+    } catch (err) {
+      console.error("Error toggling model active state:", err);
+      setError("Failed to update model status.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -154,7 +129,9 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
       connectModel,
       disconnectModel,
       updateModelConfig,
-      toggleModelActive
+      toggleModelActive,
+      loading,
+      error
     }}>
       {children}
     </AIModelsContext.Provider>
