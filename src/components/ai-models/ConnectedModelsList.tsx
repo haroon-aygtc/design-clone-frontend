@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Trash2, Code, Activity, TestTube, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { Settings, Trash2, Code, Activity, TestTube, Eye, EyeOff, MessageSquare, Bot } from "lucide-react";
 import { AIModel } from "@/types/aiModels";
 import ModelConfigForm from "@/components/ai-models/ModelConfigForm";
 import ModelCodeSnippet from "@/components/ai-models/ModelCodeSnippet";
