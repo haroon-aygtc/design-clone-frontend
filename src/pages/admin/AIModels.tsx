@@ -9,13 +9,14 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Plus, Settings, Trash2, Code, Activity, TestTube, Eye, EyeOff } from "lucide-react";
+import { Bot, Plus, Settings, Trash2, Code, Activity, TestTube, Eye, EyeOff, MessageSquare } from "lucide-react";
 import { AIModelsProvider, useAIModels } from "@/context/AIModelsContext";
 import { useToast } from "@/components/ui/use-toast";
 import ConnectModelDialog from "@/components/ai-models/ConnectModelDialog";
 import ModelConfigForm from "@/components/ai-models/ModelConfigForm";
 import ModelCodeSnippet from "@/components/ai-models/ModelCodeSnippet";
 import ModelLogs from "@/components/ai-models/ModelLogs";
+import TestChatDialog from "@/components/ai-models/TestChatDialog";
 import { AIModel } from "@/types/aiModels";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -34,6 +35,7 @@ const AIModelsContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [testChatOpen, setTestChatOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState<AIModel | undefined>(undefined);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
@@ -94,7 +96,6 @@ const AIModelsContent = () => {
   };
 
   const handleTestConnection = (model: AIModel) => {
-    // Simulating API test
     toast({
       title: "Testing Connection",
       description: "Please wait while we test the connection...",
@@ -109,13 +110,23 @@ const AIModelsContent = () => {
     }, 1500);
   };
 
+  const handleTestChat = (model: AIModel) => {
+    setSelectedModel(model);
+    setTestChatOpen(true);
+  };
+
   return (
     <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">AI Model Management</h1>
+        <p className="text-muted-foreground">Configure and manage the AI models used in your application</p>
+      </div>
+      
       <Tabs defaultValue="available" className="w-full" onValueChange={setActiveTab}>
         <div className="flex justify-between items-center mb-6">
-          <TabsList>
-            <TabsTrigger value="available">Available Models</TabsTrigger>
-            <TabsTrigger value="connected">Connected Models</TabsTrigger>
+          <TabsList className="grid w-[400px] grid-cols-2">
+            <TabsTrigger value="available" className="text-base">Available Models</TabsTrigger>
+            <TabsTrigger value="connected" className="text-base">Connected Models</TabsTrigger>
           </TabsList>
           
           {activeTab === "available" && (
@@ -125,7 +136,7 @@ const AIModelsContent = () => {
           )}
           
           {activeTab === "connected" && (
-            <Button onClick={() => setConnectDialogOpen(true)}>
+            <Button onClick={() => { setSelectedModel(undefined); setConnectDialogOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" /> Connect New Model
             </Button>
           )}
@@ -159,7 +170,7 @@ const AIModelsContent = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAvailableModels.map((model) => (
-              <Card key={model.id} className="overflow-hidden border-gray-200">
+              <Card key={model.id} className="overflow-hidden border-gray-200 hover:border-primary/50 transition-colors">
                 <CardHeader className="bg-gray-50 pb-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -207,7 +218,7 @@ const AIModelsContent = () => {
               <Bot className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
               <h3 className="text-lg font-medium mb-2">No Connected Models</h3>
               <p className="text-muted-foreground mb-4">Connect your first AI model to get started.</p>
-              <Button onClick={() => setConnectDialogOpen(true)}>
+              <Button onClick={() => { setSelectedModel(undefined); setConnectDialogOpen(true); }}>
                 <Plus className="mr-2 h-4 w-4" /> Connect a Model
               </Button>
             </div>
@@ -219,8 +230,8 @@ const AIModelsContent = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{model.name}</CardTitle>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                          Connected
+                        <Badge variant="outline" className={`${model.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100'}`}>
+                          {model.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
                       <CardDescription>{model.provider} • {model.type}</CardDescription>
@@ -314,13 +325,25 @@ const AIModelsContent = () => {
                 
                 <CardFooter className="border-t pt-4 flex justify-between">
                   <Button variant="outline">Export Logs</Button>
-                  <div>
-                    <Button variant="outline" className="mr-2" onClick={() => handleTestConnection(model)}>
-                      <TestTube className="h-4 w-4 mr-2" />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex gap-2 items-center" 
+                      onClick={() => handleTestChat(model)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Test Chat
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex gap-2 items-center" 
+                      onClick={() => handleTestConnection(model)}
+                    >
+                      <TestTube className="h-4 w-4" />
                       Test Connection
                     </Button>
-                    <Button>
-                      <Settings className="h-4 w-4 mr-2" />
+                    <Button className="flex gap-2 items-center">
+                      <Settings className="h-4 w-4" />
                       Advanced Settings
                     </Button>
                   </div>
@@ -336,6 +359,14 @@ const AIModelsContent = () => {
         onOpenChange={setConnectDialogOpen}
         model={selectedModel}
       />
+      
+      {selectedModel && (
+        <TestChatDialog 
+          open={testChatOpen} 
+          onOpenChange={setTestChatOpen}
+          model={selectedModel}
+        />
+      )}
       
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <DialogContent>

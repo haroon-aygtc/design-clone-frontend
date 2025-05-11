@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { AIModel } from "@/types/aiModels";
 import { useAIModels } from "@/context/AIModelsContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Bot } from "lucide-react";
+import { Bot, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ConnectModelDialogProps {
   open: boolean;
@@ -18,7 +19,7 @@ interface ConnectModelDialogProps {
 }
 
 const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: ConnectModelDialogProps) => {
-  const { connectModel, availableModels } = useAIModels();
+  const { connectModel, availableModels, connectedModels } = useAIModels();
   const { toast } = useToast();
   
   const [selectedModelId, setSelectedModelId] = useState<string>(preselectedModel?.id || "");
@@ -27,6 +28,7 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
   const [maxTokens, setMaxTokens] = useState("2000");
   const [systemPrompt, setSystemPrompt] = useState("You are a helpful assistant.");
   const [apiEndpoint, setApiEndpoint] = useState("");
+  const [formError, setFormError] = useState("");
 
   // Update selected model when preselected model changes
   useEffect(() => {
@@ -35,22 +37,23 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
     }
   }, [preselectedModel]);
 
+  // Reset form error when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setFormError("");
+    }
+  }, [open]);
+
   const handleConnect = () => {
+    setFormError(""); // Clear previous errors
+    
     if (!selectedModelId) {
-      toast({
-        title: "Error",
-        description: "Please select a model",
-        variant: "destructive"
-      });
+      setFormError("Please select a model");
       return;
     }
 
     if (!apiKey.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide an API key",
-        variant: "destructive"
-      });
+      setFormError("Please provide an API key");
       return;
     }
 
@@ -58,11 +61,7 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
     const modelToConnect = availableModels.find(m => m.id === selectedModelId);
     
     if (!modelToConnect) {
-      toast({
-        title: "Error",
-        description: "Selected model not found",
-        variant: "destructive"
-      });
+      setFormError("Selected model not found");
       return;
     }
 
@@ -92,10 +91,10 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
     setMaxTokens("2000");
     setSystemPrompt("You are a helpful assistant.");
     setApiEndpoint("");
+    setFormError("");
   };
 
   // Filter out models that are already connected
-  const { connectedModels } = useAIModels();
   const connectableModels = availableModels.filter(model => 
     !connectedModels.some(connectedModel => connectedModel.id === model.id)
   );
@@ -115,6 +114,13 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
           </div>
         </DialogHeader>
         
+        {formError && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="grid gap-4 py-4">
           {!preselectedModel && (
             <div className="grid grid-cols-4 items-center gap-4">
@@ -123,7 +129,7 @@ const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: Con
               </Label>
               <div className="col-span-3">
                 <Select value={selectedModelId} onValueChange={setSelectedModelId}>
-                  <SelectTrigger>
+                  <SelectTrigger id="model-select">
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent>
