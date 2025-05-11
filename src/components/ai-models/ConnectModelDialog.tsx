@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,27 +17,56 @@ interface ConnectModelDialogProps {
   model?: AIModel; // Optional: if connecting an existing model
 }
 
-const ConnectModelDialog = ({ open, onOpenChange, model }: ConnectModelDialogProps) => {
-  const { connectModel } = useAIModels();
+const ConnectModelDialog = ({ open, onOpenChange, model: preselectedModel }: ConnectModelDialogProps) => {
+  const { connectModel, availableModels } = useAIModels();
   const { toast } = useToast();
   
+  const [selectedModelId, setSelectedModelId] = useState<string>(preselectedModel?.id || "");
   const [apiKey, setApiKey] = useState("");
   const [temperature, setTemperature] = useState("0.7");
   const [maxTokens, setMaxTokens] = useState("2000");
   const [systemPrompt, setSystemPrompt] = useState("You are a helpful assistant.");
   const [apiEndpoint, setApiEndpoint] = useState("");
 
+  // Update selected model when preselected model changes
+  useEffect(() => {
+    if (preselectedModel) {
+      setSelectedModelId(preselectedModel.id);
+    }
+  }, [preselectedModel]);
+
   const handleConnect = () => {
-    if (!model || !apiKey.trim()) {
+    if (!selectedModelId) {
       toast({
         title: "Error",
-        description: "Please select a model and provide an API key",
+        description: "Please select a model",
         variant: "destructive"
       });
       return;
     }
 
-    connectModel(model, apiKey, {
+    if (!apiKey.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide an API key",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Find the selected model from available models
+    const modelToConnect = availableModels.find(m => m.id === selectedModelId);
+    
+    if (!modelToConnect) {
+      toast({
+        title: "Error",
+        description: "Selected model not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    connectModel(modelToConnect, apiKey, {
       temperature: parseFloat(temperature),
       maxTokens: parseInt(maxTokens),
       systemPrompt: systemPrompt,
@@ -46,7 +75,7 @@ const ConnectModelDialog = ({ open, onOpenChange, model }: ConnectModelDialogPro
 
     toast({
       title: "Model Connected",
-      description: `${model.name} has been successfully connected.`,
+      description: `${modelToConnect.name} has been successfully connected.`,
       variant: "default"
     });
 
@@ -55,12 +84,21 @@ const ConnectModelDialog = ({ open, onOpenChange, model }: ConnectModelDialogPro
   };
 
   const resetForm = () => {
+    if (!preselectedModel) {
+      setSelectedModelId("");
+    }
     setApiKey("");
     setTemperature("0.7");
     setMaxTokens("2000");
     setSystemPrompt("You are a helpful assistant.");
     setApiEndpoint("");
   };
+
+  // Filter out models that are already connected
+  const { connectedModels } = useAIModels();
+  const connectableModels = availableModels.filter(model => 
+    !connectedModels.some(connectedModel => connectedModel.id === model.id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,13 +109,44 @@ const ConnectModelDialog = ({ open, onOpenChange, model }: ConnectModelDialogPro
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle>Connect {model?.name}</DialogTitle>
-              <DialogDescription>Enter your API key and configure model parameters.</DialogDescription>
+              <DialogTitle>Connect AI Model</DialogTitle>
+              <DialogDescription>Select a model and enter your API key to connect.</DialogDescription>
             </div>
           </div>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
+          {!preselectedModel && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="model-select" className="text-right">
+                Model
+              </Label>
+              <div className="col-span-3">
+                <Select value={selectedModelId} onValueChange={setSelectedModelId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {connectableModels.length > 0 ? (
+                      connectableModels.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.name} ({model.provider})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        No models available to connect
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {connectableModels.length === 0 && "All available models are already connected."}
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="api-key" className="text-right">
               API Key
