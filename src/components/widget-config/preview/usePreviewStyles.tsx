@@ -6,7 +6,19 @@ export function usePreviewStyles(selectedDevice: DeviceType) {
     return selectedDevice === "mobile" ? "85%" : "300px";
   };
 
+  const getDeviceClass = () => {
+    return selectedDevice === "mobile" 
+      ? "rounded-lg shadow-lg" 
+      : "rounded-md shadow-md";
+  };
+
+  const getFrameHeight = () => {
+    return selectedDevice === "mobile" ? "600px" : "400px";
+  };
+
   return {
-    getDeviceMaxWidth
+    getDeviceMaxWidth,
+    getDeviceClass,
+    getFrameHeight
   };
 }
