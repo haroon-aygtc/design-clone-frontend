@@ -3,6 +3,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --admin-navy-color: #1A2033;
+  --admin-highlight-color: #242C46;
+  --admin-text-color: #FFFFFF;
+  --admin-secondarytext-color: #A0AEC0;
+  --admin-accent-color: #6366F1;
+}
+
+.dark {
+  --admin-navy-color: #0F172A;
+  --admin-highlight-color: #1E293B;
+  --admin-text-color: #F8FAFC;
+  --admin-secondarytext-color: #94A3B8;
+  --admin-accent-color: #4F46E5;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -144,26 +160,62 @@ pre code .operator {
 }
 
 .admin-sidebar {
-  background-color: theme('colors.admin.navy');
-  color: theme('colors.admin.text');
+  background-color: theme('colors.admin.navy.DEFAULT');
+  color: theme('colors.admin.text.DEFAULT');
+}
+
+.dark .admin-sidebar {
+  background-color: hsl(222.2 47.4% 11.2%);
+  color: hsl(210 40% 98%);
 }
 
 .admin-content {
-  background-color: #f8fafc;
+  @apply bg-background;
 }
 
 .sidebar-item {
-  @apply flex items-center gap-2 py-3 px-4 text-admin-secondaryText hover:bg-admin-highlight transition-colors rounded-md;
+  @apply flex items-center gap-2 py-3 px-4 transition-colors rounded-md;
+  color: theme('colors.admin.secondaryText.DEFAULT');
+}
+
+.sidebar-item:hover {
+  background-color: theme('colors.admin.highlight.DEFAULT');
+}
+
+.dark .sidebar-item {
+  @apply text-gray-300;
+}
+
+.dark .sidebar-item:hover {
+  @apply bg-gray-800;
 }
 
 .sidebar-item.active {
-  @apply bg-admin-highlight text-white;
+  background-color: theme('colors.admin.highlight.DEFAULT');
+  color: white;
+}
+
+.dark .sidebar-item.active {
+  @apply bg-gray-800 text-white;
+}
+
+.sidebar-submenu {
+  @apply pl-4 mt-1 space-y-1 ml-4;
+  border-left: 1px solid theme('colors.admin.highlight.DEFAULT');
+}
+
+.dark .sidebar-submenu {
+  @apply border-gray-700;
+}
+
+.sidebar-submenu .sidebar-item {
+  @apply py-2 text-sm;
 }
 
 .stat-card {
-  @apply bg-white p-4 rounded-lg shadow-sm border border-gray-100;
+  @apply bg-card text-card-foreground p-4 rounded-lg shadow-sm border;
 }
 
 .dashboard-card {
-  @apply bg-white p-6 rounded-lg shadow-sm border border-gray-100;
+  @apply bg-card text-card-foreground p-6 rounded-lg shadow-sm border;
 }

@@ -28,21 +28,21 @@ const Dashboard = () => {
         <div className="lg:col-span-2">
           <div className="dashboard-card">
             <h2 className="text-base font-semibold mb-2">Quick Actions</h2>
-            <p className="text-sm text-gray-600 mb-4">Common tasks and shortcuts</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Common tasks and shortcuts</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <QuickActionCard
                 title="Configure Widget"
-                icon={<Settings className="h-8 w-8 text-admin-navy" />}
+                icon={<Settings className="h-8 w-8 text-primary" />}
                 to="/admin/widget-config"
               />
               <QuickActionCard
                 title="Edit Context Rules"
-                icon={<FileCode className="h-8 w-8 text-admin-navy" />}
+                icon={<FileCode className="h-8 w-8 text-primary" />}
                 to="/admin/context-rules"
               />
               <QuickActionCard
                 title="Get Embed Code"
-                icon={<Code className="h-8 w-8 text-admin-navy" />}
+                icon={<Code className="h-8 w-8 text-primary" />}
                 to="/admin/embed-code"
               />
             </div>

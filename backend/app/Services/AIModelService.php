@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AIModel;
 use App\Repositories\AIModelRepository;
+use App\Services\AI\AIProviderService;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -11,10 +12,14 @@ use Illuminate\Support\Facades\Log;
 class AIModelService
 {
     protected $modelRepository;
+    protected $providerService;
 
-    public function __construct(AIModelRepository $modelRepository)
-    {
+    public function __construct(
+        AIModelRepository $modelRepository,
+        AIProviderService $providerService
+    ) {
         $this->modelRepository = $modelRepository;
+        $this->providerService = $providerService;
     }
 
     /**
@@ -137,24 +142,22 @@ class AIModelService
         try {
             $model = $this->modelRepository->findById($id);
             $apiKey = $model->getDecryptedApiKeyAttribute();
-            
-            // This would be replaced with actual API testing logic
-            // based on the provider type (OpenAI, Anthropic, etc.)
+
             if (empty($apiKey)) {
                 return [
                     'success' => false,
                     'message' => 'Invalid or missing API key'
                 ];
             }
-            
+
+            // Use the provider service to test the connection
+            $result = $this->providerService->testConnection($model);
+
             // Log the connection attempt
             $model->last_used = now();
             $model->save();
-            
-            return [
-                'success' => true,
-                'message' => 'Connection successful'
-            ];
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('Error testing AI model connection: ' . $e->getMessage());
             return [
@@ -166,7 +169,7 @@ class AIModelService
 
     /**
      * Get usage logs for a model
-     * 
+     *
      * @param int $id
      * @return array
      */
@@ -174,7 +177,7 @@ class AIModelService
     {
         try {
             $model = $this->modelRepository->findById($id);
-            
+
             // In a real application, this would fetch actual logs from a logs table
             // This is just a mock implementation
             return [

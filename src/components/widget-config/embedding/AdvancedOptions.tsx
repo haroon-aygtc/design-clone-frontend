@@ -23,13 +23,13 @@ export function AdvancedOptions() {
                 <Label htmlFor="disable-mobile">Disable on Mobile</Label>
                 <Switch id="disable-mobile" />
               </div>
-              <p className="text-xs text-gray-500">Hide the chat widget on mobile devices</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Hide the chat widget on mobile devices</p>
             </div>
-            
+
             <div>
               <Label className="mb-2 block">Show on Pages</Label>
               <Input placeholder="e.g. /pricing, /contact" />
-              <p className="text-xs text-gray-500 mt-1">Comma-separated list of pages to show the widget on (leave empty for all)</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Comma-separated list of pages to show the widget on (leave empty for all)</p>
             </div>
           </CardContent>
         </Card>

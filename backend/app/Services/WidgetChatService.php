@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\AIModelService;
+use App\Services\AI\AIProviderService;
 use App\Repositories\WidgetSettingRepository;
 use Illuminate\Support\Facades\Log;
 
@@ -10,13 +11,16 @@ class WidgetChatService
 {
     protected $aiModelService;
     protected $widgetSettingRepository;
+    protected $providerService;
 
     public function __construct(
         AIModelService $aiModelService,
-        WidgetSettingRepository $widgetSettingRepository
+        WidgetSettingRepository $widgetSettingRepository,
+        AIProviderService $providerService
     ) {
         $this->aiModelService = $aiModelService;
         $this->widgetSettingRepository = $widgetSettingRepository;
+        $this->providerService = $providerService;
     }
 
     /**
@@ -32,11 +36,11 @@ class WidgetChatService
         try {
             // Get the widget settings
             $widgetSetting = $this->widgetSettingRepository->findById($widgetId);
-            
+
             // Get the AI model
             $aiModelId = $widgetSetting->ai_model_id;
             $aiModel = $this->aiModelService->getModelById($aiModelId);
-            
+
             // Verify the model is active
             if (!$aiModel->is_active) {
                 return [
@@ -44,27 +48,55 @@ class WidgetChatService
                     'message' => 'The AI model is not currently available.'
                 ];
             }
-            
+
             // Record usage of the model
             $this->aiModelService->incrementUsageCount($aiModelId);
-            
+
             // Prepare message context with widget settings for personalization
             $enhancedContext = array_merge($context, [
                 'widget_name' => $widgetSetting->name,
                 'initial_message' => $widgetSetting->initial_message,
             ]);
-            
-            // In a real implementation, this would call the actual AI API
-            // with the appropriate model configuration
-            $response = $this->simulateAIResponse($message, $aiModel, $enhancedContext);
-            
+
+            // Prepare system prompt with widget context
+            $systemPrompt = "You are an AI assistant for {$widgetSetting->name}. ";
+            $systemPrompt .= "Be helpful, concise, and friendly. ";
+
+            if (!empty($widgetSetting->ai_instructions)) {
+                $systemPrompt .= $widgetSetting->ai_instructions;
+            }
+
+            // Format any previous messages if provided in context
+            $previousMessages = [];
+            if (!empty($context['messages']) && is_array($context['messages'])) {
+                $previousMessages = $context['messages'];
+            }
+
+            // Generate completion using the provider service
+            $result = $this->providerService->generateCompletion(
+                $aiModel,
+                $message,
+                $previousMessages,
+                [
+                    'systemPrompt' => $systemPrompt
+                ]
+            );
+
+            if (!$result['success']) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to generate a response: ' . $result['message']
+                ];
+            }
+
             return [
                 'success' => true,
-                'message' => $response,
+                'message' => $result['message'],
                 'model' => [
                     'name' => $aiModel->name,
                     'provider' => $aiModel->provider
-                ]
+                ],
+                'usage' => $result['usage'] ?? null
             ];
         } catch (\Exception $e) {
             Log::error('Error processing chat message: ' . $e->getMessage());
@@ -74,38 +106,6 @@ class WidgetChatService
             ];
         }
     }
-    
-    /**
-     * Simulate an AI response (temporary implementation)
-     *
-     * @param string $message
-     * @param object $aiModel
-     * @param array $context
-     * @return string
-     */
-    private function simulateAIResponse(string $message, $aiModel, array $context = []): string
-    {
-        // In a real implementation, this would use the model's configuration
-        // to call the appropriate API with the right parameters
-        $modelConfig = $aiModel->configuration ?? [];
-        
-        $responses = [
-            'hello' => "Hello! How can I assist you today?",
-            'how are you' => "I'm an AI assistant powered by {$aiModel->name}. I don't have feelings, but I'm ready to help you!",
-            'help' => "I can answer questions, provide information, or assist with tasks. What do you need help with?",
-        ];
-        
-        $messageLower = strtolower($message);
-        
-        foreach ($responses as $key => $response) {
-            if (strpos($messageLower, $key) !== false) {
-                return $response;
-            }
-        }
-        
-        // Include widget context in response if available
-        $widgetName = isset($context['widget_name']) ? " through {$context['widget_name']}" : "";
-        
-        return "Thanks for your message{$widgetName}. I'm currently using {$aiModel->name} to process your requests. How can I help you further?";
-    }
+
+
 }

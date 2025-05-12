@@ -10,7 +10,7 @@ interface QuickActionCardProps {
 
 const QuickActionCard = ({ title, icon, to }: QuickActionCardProps) => {
   return (
-    <Link to={to} className="bg-white rounded-lg border border-gray-100 p-6 flex flex-col items-center justify-center hover:shadow-md transition-shadow">
+    <Link to={to} className="bg-card text-card-foreground rounded-lg border p-6 flex flex-col items-center justify-center hover:shadow-md transition-shadow">
       <div className="w-12 h-12 flex items-center justify-center mb-4">
         {icon}
       </div>

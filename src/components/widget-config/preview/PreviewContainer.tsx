@@ -34,8 +34,8 @@ export function PreviewContainer({ selectedDevice, children }: PreviewContainerP
   };
 
   return (
-    <div 
-      className="border-2 border-dashed border-gray-200 rounded-lg min-h-[500px] bg-gray-50 relative overflow-hidden"
+    <div
+      className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg min-h-[500px] bg-gray-50 dark:bg-gray-900 relative overflow-hidden"
       style={getPreviewContainerStyles()}
     >
       {children}

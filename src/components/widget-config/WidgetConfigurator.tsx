@@ -60,7 +60,7 @@ export function WidgetConfigurator({
   setSelectedModelId,
 }: WidgetConfiguratorProps) {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+    <div className="bg-card text-card-foreground p-6 rounded-lg shadow-sm border mb-6">
       <h2 className="text-xl font-semibold mb-4">Widget Configurator</h2>
 
       <AIModelsProvider>

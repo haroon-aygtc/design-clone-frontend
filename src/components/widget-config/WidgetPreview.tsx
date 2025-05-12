@@ -33,15 +33,15 @@ export function WidgetPreview({
   const { getDeviceMaxWidth } = usePreviewStyles(selectedDevice);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border sticky top-6">
+    <div className="bg-card text-card-foreground p-6 rounded-lg shadow-sm border sticky top-6">
       <h2 className="text-lg font-semibold mb-4">Live Preview</h2>
-      
+
       {/* Device preview selection */}
-      <DeviceSwitcher 
-        selectedDevice={selectedDevice} 
-        setSelectedDevice={setSelectedDevice} 
+      <DeviceSwitcher
+        selectedDevice={selectedDevice}
+        setSelectedDevice={setSelectedDevice}
       />
-      
+
       <PreviewContainer selectedDevice={selectedDevice}>
         {previewLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -50,10 +50,10 @@ export function WidgetPreview({
         ) : (
           <>
             <SimulatedContent />
-            
+
             <div className="relative">
               {/* Widget Preview */}
-              <ChatWidget 
+              <ChatWidget
                 primaryColor={primaryColor}
                 chatIconSize={chatIconSize}
                 borderRadius={borderRadius}
@@ -67,9 +67,9 @@ export function WidgetPreview({
             </div>
 
             {/* Preview Controls */}
-            <PreviewControls 
-              showExpanded={showExpanded} 
-              setShowExpanded={setShowExpanded} 
+            <PreviewControls
+              showExpanded={showExpanded}
+              setShowExpanded={setShowExpanded}
             />
           </>
         )}

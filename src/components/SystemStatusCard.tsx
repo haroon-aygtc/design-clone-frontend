@@ -51,8 +51,8 @@ const SystemStatusCard = ({ items }: SystemStatusCardProps) => {
   return (
     <div className="dashboard-card">
       <h2 className="text-base font-semibold mb-2">System Status</h2>
-      <p className="text-sm text-gray-600 mb-4">Current system health</p>
-      <div className="divide-y divide-gray-100">
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Current system health</p>
+      <div className="divide-y divide-gray-100 dark:divide-gray-800">
         {items.map((item, index) => (
           <StatusItem key={index} label={item.label} status={item.status} />
         ))}

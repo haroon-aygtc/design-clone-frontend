@@ -64,12 +64,30 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
         admin: {
-          dark: '#111827',
-          navy: '#1A2033',
-          highlight: '#242C46',
-          text: '#FFFFFF',
-          secondaryText: '#A0AEC0',
-          accent: '#6366F1',
+          dark: {
+            DEFAULT: '#111827',
+            dark: '#030712'
+          },
+          navy: {
+            DEFAULT: '#1A2033',
+            dark: '#0F172A'
+          },
+          highlight: {
+            DEFAULT: '#242C46',
+            dark: '#1E293B'
+          },
+          text: {
+            DEFAULT: '#FFFFFF',
+            dark: '#F8FAFC'
+          },
+          secondaryText: {
+            DEFAULT: '#A0AEC0',
+            dark: '#94A3B8'
+          },
+          accent: {
+            DEFAULT: '#6366F1',
+            dark: '#4F46E5'
+          }
         }
 			},
 			borderRadius: {

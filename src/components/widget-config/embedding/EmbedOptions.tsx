@@ -12,11 +12,11 @@ export function EmbedOptions({ embedCode, activeTab, setActiveTab }: EmbedOption
   // Generate iframe embed code (default)
   const getIframeCode = () => {
     return `<!-- iFrame Integration - Complete isolation -->
-<iframe 
-  src="https://cdn.example.com/chat-widget/embed.html" 
-  width="0" 
-  height="0" 
-  style="border:none; position:fixed; bottom:0; right:0;" 
+<iframe
+  src="https://cdn.example.com/chat-widget/embed.html"
+  width="0"
+  height="0"
+  style="border:none; position:fixed; bottom:0; right:0;"
   allow="microphone"
   title="Chat Widget">
 </iframe>`;
@@ -44,7 +44,7 @@ export function EmbedOptions({ embedCode, activeTab, setActiveTab }: EmbedOption
 
       <TabsContent value="iframe" className="mt-0">
         <CodePreview code={getIframeCode()} />
-        <div className="mt-3 text-xs text-gray-500">
+        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
           <p>Complete isolation from your website's styles and scripts.</p>
           <p>Best for maximum compatibility and security.</p>
         </div>
@@ -52,7 +52,7 @@ export function EmbedOptions({ embedCode, activeTab, setActiveTab }: EmbedOption
 
       <TabsContent value="web-component" className="mt-0">
         <CodePreview code={getWebComponentCode()} />
-        <div className="mt-3 text-xs text-gray-500">
+        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
           <p>Uses Shadow DOM to encapsulate styles and scripts.</p>
           <p>Better performance and more seamless integration.</p>
         </div>

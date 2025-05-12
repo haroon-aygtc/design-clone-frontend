@@ -28,12 +28,12 @@ Route::prefix('ai-models')->group(function () {
     Route::get('/{id}', [AIModelController::class, 'show']);
     Route::put('/{id}', [AIModelController::class, 'update']);
     Route::delete('/{id}', [AIModelController::class, 'destroy']);
-    
+
     Route::put('/{id}/configuration', [AIModelController::class, 'updateConfiguration']);
     Route::put('/{id}/toggle-active', [AIModelController::class, 'toggleActive']);
     Route::get('/{id}/test-connection', [AIModelController::class, 'testConnection']);
     Route::get('/{id}/logs', [AIModelController::class, 'getLogs']);
-    
+
     // Widget-related routes
     Route::get('/widget/available', [AIModelController::class, 'getWidgetModels']);
     Route::post('/widget/assign', [AIModelController::class, 'assignModelToWidget']);
@@ -47,7 +47,7 @@ Route::prefix('widget-settings')->group(function () {
     Route::get('/{id}', [WidgetSettingController::class, 'show']);
     Route::put('/{id}', [WidgetSettingController::class, 'update']);
     Route::delete('/{id}', [WidgetSettingController::class, 'destroy']);
-    
+
     Route::get('/model/{aiModelId}', [WidgetSettingController::class, 'getByModelId']);
     Route::get('/{id}/embed-code', [WidgetSettingController::class, 'generateEmbedCode']);
 });
@@ -55,4 +55,5 @@ Route::prefix('widget-settings')->group(function () {
 // Widget Chat routes
 Route::prefix('widget')->group(function () {
     Route::post('/chat', [WidgetChatController::class, 'processMessage']);
+    Route::post('/chat/stream', [WidgetChatController::class, 'processMessageStream']);
 });

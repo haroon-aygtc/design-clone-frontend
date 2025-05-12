@@ -8,9 +8,11 @@ interface AIModelsContextType {
   availableModels: AIModel[];
   connectedModels: AIModel[];
   connectModel: (model: AIModel, apiKey: string, configuration?: AIModelConfiguration) => Promise<void>;
+  addModel: (modelData: Partial<AIModel>) => Promise<void>;
   disconnectModel: (modelId: string) => void;
   updateModelConfig: (modelId: string, config: Partial<AIModelConfiguration>) => Promise<void>;
   toggleModelActive: (modelId: string) => Promise<void>;
+  testConnection: (modelId: string) => Promise<boolean>;
   loading: boolean;
   error: string | null;
 }
@@ -34,7 +36,7 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
           aiModelService.getAvailableModels(),
           aiModelService.getConnectedModels()
         ]);
-        
+
         setAvailableModels(availableModelsData);
         setConnectedModels(connectedModelsData);
       } catch (err) {
@@ -103,13 +105,13 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const updatedModel = await aiModelService.updateModelConfig(modelId, config);
-      
+
       setConnectedModels(
-        connectedModels.map(model => 
+        connectedModels.map(model =>
           model.id === modelId ? updatedModel : model
         )
       );
-      
+
       toast({
         title: "Config Updated",
         description: "Model configuration has been updated successfully.",
@@ -132,13 +134,13 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const updatedModel = await aiModelService.toggleModelActive(modelId);
-      
+
       setConnectedModels(
-        connectedModels.map(model => 
+        connectedModels.map(model =>
           model.id === modelId ? updatedModel : model
         )
       );
-      
+
       toast({
         title: "Status Updated",
         description: `Model is now ${updatedModel.isActive ? 'active' : 'inactive'}.`,
@@ -157,14 +159,97 @@ export function AIModelsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addModel = async (modelData: Partial<AIModel>) => {
+    try {
+      setLoading(true);
+      const newModel = await aiModelService.addModel(modelData);
+
+      // Update both available and connected models
+      setAvailableModels([...availableModels, newModel]);
+      setConnectedModels([...connectedModels, newModel]);
+
+      toast({
+        title: "Model Added",
+        description: `${newModel.name} has been successfully added.`,
+        variant: "default",
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error adding model:", errorMessage);
+
+      // Extract error message from the response if available
+      let displayMessage = "Failed to add model. Please check your inputs and try again.";
+      if (err.response?.data) {
+        console.error("Error response data:", err.response.data);
+
+        // Handle validation errors
+        if (err.response.data.api_key) {
+          displayMessage = `API Key Error: ${err.response.data.api_key}`;
+        } else if (typeof err.response.data === 'string') {
+          displayMessage = err.response.data;
+        } else if (err.response.data.message) {
+          displayMessage = err.response.data.message;
+        }
+      }
+
+      setError(displayMessage);
+      toast({
+        title: "Error",
+        description: displayMessage,
+        variant: "destructive",
+      });
+
+      // Re-throw the error so the component can handle it
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testConnection = async (modelId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const result = await aiModelService.testConnection(modelId);
+
+      if (result.success) {
+        toast({
+          title: "Connection Successful",
+          description: result.message || "Successfully connected to the AI provider.",
+          variant: "default",
+        });
+        return true;
+      } else {
+        toast({
+          title: "Connection Failed",
+          description: result.message || "Failed to connect to the AI provider.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error testing connection:", errorMessage);
+      toast({
+        title: "Connection Error",
+        description: "An error occurred while testing the connection.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AIModelsContext.Provider value={{
       availableModels,
       connectedModels,
       connectModel,
+      addModel,
       disconnectModel,
       updateModelConfig,
       toggleModelActive,
+      testConnection,
       loading,
       error
     }}>
