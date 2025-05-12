@@ -1,4 +1,6 @@
 
+import { Badge } from "@/components/ui/badge";
+
 export function SimulatedContent() {
   return (
     <div className="flex flex-col h-full">

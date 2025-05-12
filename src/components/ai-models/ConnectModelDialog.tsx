@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { AIModel } from "@/types/aiModels";
 import { useAIModels } from "@/context/AIModelsContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Bot } from "lucide-react";
+import { Bot, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ConnectModelDialogProps {
   open: boolean;
@@ -56,16 +58,27 @@ const ConnectModelDialog = ({ open, onOpenChange, model: initialModel }: Connect
   };
 
   const handleConnect = () => {
-    if (!model || !apiKey.trim()) {
-      toast({
-        title: "Error",
-        description: "Please select a model and provide an API key",
-        variant: "destructive"
-      });
+    setFormError(""); // Clear previous errors
+    
+    if (!selectedModelId) {
+      setFormError("Please select a model");
       return;
     }
 
-    connectModel(model, apiKey, {
+    if (!apiKey.trim()) {
+      setFormError("Please provide an API key");
+      return;
+    }
+
+    // Find the selected model from available models
+    const modelToConnect = availableModels.find(m => m.id === selectedModelId);
+    
+    if (!modelToConnect) {
+      setFormError("Selected model not found");
+      return;
+    }
+
+    connectModel(modelToConnect, apiKey, {
       temperature: parseFloat(temperature),
       maxTokens: parseInt(maxTokens),
       systemPrompt: systemPrompt,
@@ -74,7 +87,7 @@ const ConnectModelDialog = ({ open, onOpenChange, model: initialModel }: Connect
 
     toast({
       title: "Model Connected",
-      description: `${model.name} has been successfully connected.`,
+      description: `${modelToConnect.name} has been successfully connected.`,
       variant: "default"
     });
 
@@ -92,7 +105,13 @@ const ConnectModelDialog = ({ open, onOpenChange, model: initialModel }: Connect
     setMaxTokens("2000");
     setSystemPrompt("You are a helpful assistant.");
     setApiEndpoint("");
+    setFormError("");
   };
+
+  // Filter out models that are already connected
+  const connectableModels = availableModels.filter(model => 
+    !connectedModels.some(connectedModel => connectedModel.id === model.id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
